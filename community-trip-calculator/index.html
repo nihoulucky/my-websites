@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>社區小旅行收支試算器</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7f5;color:#20372e;font-family:system-ui,"Noto Sans TC",sans-serif;line-height:1.65}main{max-width:960px;margin:auto;padding:32px 20px}h1{font-size:clamp(1.6rem,5vw,2.2rem);margin:0 0 12px}h2{font-size:1.2rem;margin:0 0 16px}.intro{color:#475c52}.panel{background:#fff;border:1px solid #cedbd3;border-radius:16px;padding:24px;margin:24px 0}.fields,.results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}label{display:block;font-weight:650}input{width:100%;font:inherit;padding:10px 12px;border:1px solid #7a8f82;border-radius:8px;margin-top:6px;color:#20372e;background:white}input:focus-visible,button:focus-visible{outline:3px solid #125c9a;outline-offset:3px}input[aria-invalid="true"]{border:2px solid #a22222}.error{display:block;color:#922020;min-height:1.5em;font-size:.9rem}.hint{color:#52675c;font-size:.95rem}button{font:inherit;background:#245b44;color:white;border:0;border-radius:8px;padding:11px 18px;cursor:pointer;min-height:44px}.results{margin:0}.metric{padding:16px;background:#f3f6f4;border-radius:10px;overflow-wrap:anywhere}.metric dt{font-size:.95rem}.metric dd{margin:8px 0 0;font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}.metric dd.long{font-size:1.1rem}.profit{color:#17613e}.loss{color:#a12a24}.neutral{color:#344b40}.notice{background:#fff5dd;border-left:4px solid #a77716;padding:16px;border-radius:4px}details{margin-top:18px}summary{cursor:pointer;min-height:44px}ul{padding-left:24px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}@media(max-width:600px){main{padding:24px 16px}.panel{padding:18px}.fields,.results{grid-template-columns:1fr;gap:12px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>社區小旅行收支試算器</h1><p class="intro">以桃米生態旅遊案例為靈感，快速試算參加人數、收費與成本的關係。這是教學模擬工具，不代表桃米任何單位的真實報價或營運資料。</p></header>
+<section class="panel" aria-labelledby="input-title">
+<h2 id="input-title">1. 調整活動條件</h2>
+<p id="input-hint" class="hint">所有欄位皆必填且不可為負數；人數須為整數，金額可輸入至小數點後兩位。幣別：新臺幣（元）。</p>
+<form id="calculator" novalidate aria-describedby="input-hint">
+<div class="fields">
+<div><label for="people">付費參加人數（人）</label><input id="people" type="number" min="0" step="1" value="20" required inputmode="numeric" aria-describedby="people-error"><span id="people-error" class="error"></span></div>
+<div><label for="price">每人收費（元）</label><input id="price" type="number" min="0" step="0.01" value="800" required inputmode="decimal" aria-describedby="price-error"><span id="price-error" class="error"></span></div>
+<div><label for="meal">每人餐食成本（元）</label><input id="meal" type="number" min="0" step="0.01" value="250" required inputmode="decimal" aria-describedby="meal-error"><span id="meal-error" class="error"></span></div>
+<div><label for="material">每人材料成本（元）</label><input id="material" type="number" min="0" step="0.01" value="100" required inputmode="decimal" aria-describedby="material-error"><span id="material-error" class="error"></span></div>
+<div><label for="guide">每場導覽費（元）</label><input id="guide" type="number" min="0" step="0.01" value="3000" required inputmode="decimal" aria-describedby="guide-error"><span id="guide-error" class="error"></span></div>
+<div><label for="fixed">其他固定成本（元）</label><input id="fixed" type="number" min="0" step="0.01" value="2000" required inputmode="decimal" aria-describedby="fixed-error"><span id="fixed-error" class="error"></span></div>
+</div>
+<button type="button" id="reset">恢復預設值</button>
+</form>
+</section>
+<section class="panel" aria-labelledby="result-title">
+<h2 id="result-title">2. 即時試算結果</h2>
+<p id="result-status">目前為教學模擬數據。</p>
+<dl class="results">
+<div class="metric"><dt>總收入</dt><dd id="revenue">—</dd></div>
+<div class="metric"><dt>總成本</dt><dd id="cost">—</dd></div>
+<div class="metric"><dt id="balance-label">活動結餘</dt><dd id="balance">—</dd></div>
+<div class="metric"><dt>損益兩平人數</dt><dd id="break-even">—</dd></div>
+</dl>
+<p id="cost-detail" class="hint"></p>
+<details><summary>查看計算方式與假設</summary><ul>
+<li>總收入＝人數 × 每人收費。</li>
+<li>每人變動成本＝每人餐食成本＋每人材料成本。</li>
+<li>固定成本總額＝每場導覽費＋其他固定成本。</li>
+<li>總成本＝人數 × 每人變動成本＋固定成本總額。</li>
+<li>活動結餘＝總收入－總成本；負值表示虧損。</li>
+<li>損益兩平人數＝固定成本總額 ÷（每人收費－每人變動成本），無條件進位。</li>
+<li>每人收費小於或等於每人變動成本時，依本工具規則顯示「無法以增加人數達成損益兩平」。</li>
+<li>假設所有參加者皆付費，且每人收費、每人變動成本及每場固定成本不隨人數改變；未考慮場地容量或加派人力等限制。</li>
+</ul></details>
+</section>
+<p class="notice">本工具未納入稅金、保險、交通、行政人力與其他可能費用；試算不等於完整財務評估。</p>
+<p class="hint">本頁不串接資料庫、不蒐集個資、不儲存輸入資料，亦不傳送資料至外部服務。重新整理後會恢復預設值。</p>
+<noscript><p class="notice">請啟用 JavaScript，才能使用即時試算功能。</p></noscript>
+<div id="announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+</main>
+<script>
+'use strict';
+const defaults={people:20,price:800,meal:250,material:100,guide:3000,fixed:2000};
+const $=id=>document.getElementById(id);
+const keys=Object.keys(defaults);
+const money=new Intl.NumberFormat('zh-TW',{maximumFractionDigits:2});
+const integer=new Intl.NumberFormat('zh-TW',{maximumFractionDigits:0});
+const max=BigInt(Number.MAX_SAFE_INTEGER);
+let timer;
+function announce(text){clearTimeout(timer);timer=setTimeout(()=>{$('announcement').textContent=text;},450);}
+function clearResults(message){
+ ['revenue','cost','balance','break-even'].forEach(id=>{$(id).textContent='—';$(id).className='';});
+ $('balance-label').textContent='活動結餘';$('cost-detail').textContent='';
+ $('result-status').textContent=message;announce(message);
+}
+function update(){
+ const values={};let valid=true;
+ for(const key of keys){
+  const input=$(key);const raw=input.value.trim();const n=input.valueAsNumber;
+  let error='';
+  if(input.validity.badInput)error='請輸入有效數字。';
+  else if(raw==='')error='此欄位必填，請輸入數字。';
+  else if(!Number.isFinite(n))error='請輸入有效數字。';
+  else if(n<0)error='不可輸入負數。';
+  else if(key==='people'&&!Number.isInteger(n))error='參加人數只能是整數。';
+  else if(input.validity.stepMismatch)error='金額最多可輸入至小數點後兩位。';
+  else if(!Number.isSafeInteger(key==='people'?n:Math.round(n*100)))error='數值過大，請縮小數值。';
+  input.setAttribute('aria-invalid',String(Boolean(error)));
+  $(key+'-error').textContent=error;
+  if(error)valid=false;
+  else values[key]=BigInt(key==='people'?n:Math.round(n*100));
+ }
+ if(!valid){clearResults('請修正欄位錯誤；目前暫停試算，避免顯示不完整結果。');return;}
+ const {people,price,meal,material,guide,fixed}=values;
+ const variable=meal+material,fixedTotal=guide+fixed;
+ const revenue=people*price,cost=people*variable+fixedTotal,balance=revenue-cost;
+ const margin=price-variable;
+ const breakEven=margin>0n?(fixedTotal+margin-1n)/margin:null;
+ if([variable,fixedTotal,revenue,cost,balance<0n?-balance:balance,breakEven??0n].some(n=>n>max)){
+  clearResults('計算結果超出可安全顯示的範圍，請縮小輸入數值。');return;
+ }
+ const amount=n=>money.format(Number(n)/100)+' 元';
+ $('revenue').textContent=amount(revenue);$('cost').textContent=amount(cost);
+ const label=balance>0n?'活動結餘':balance<0n?'活動虧損':'收支平衡';
+ $('balance-label').textContent=label;
+ $('balance').textContent=amount(balance<0n?-balance:balance);
+ $('balance').className=balance>0n?'profit':balance<0n?'loss':'neutral';
+ $('break-even').textContent=breakEven===null?'無法以增加人數達成損益兩平':integer.format(breakEven)+' 人';
+ $('break-even').className=breakEven===null?'long':'';
+ $('result-status').textContent=balance>0n?'試算結果：收入大於成本，有結餘。':balance<0n?'試算結果：收入不足以支付成本，發生虧損。':'試算結果：收入與成本相同，收支平衡。';
+ $('cost-detail').textContent='每人變動成本：'+amount(variable)+'；固定成本總額：'+amount(fixedTotal)+'。';
+ announce('總收入 '+amount(revenue)+'，總成本 '+amount(cost)+'，'+label+' '+amount(balance<0n?-balance:balance)+'。損益兩平人數：'+$('break-even').textContent+'。');
+}
+$('calculator').addEventListener('input',update);
+$('calculator').addEventListener('submit',event=>event.preventDefault());
+$('reset').addEventListener('click',()=>{for(const key of keys)$(key).value=defaults[key];update();$('people').focus();});
+update();
+</script>
+</body>
+</html>
